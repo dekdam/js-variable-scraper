@@ -207,6 +207,9 @@
             cursor:pointer;
             padding:4px 8px;
         }
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
         
         .variable-type {
             background: #007bff;
@@ -298,10 +301,10 @@
                 textArea.select();
 
                 try {
-                const successful = document.execCommand("copy");
-                console.log(successful ? "Copied to clipboard!" : "Copy failed");
+                    const successful = document.execCommand("copy");
+                    console.log(successful ? "Copied to clipboard!" : "Copy failed");
                 } catch (err) {
-                console.error("Fallback: Unable to copy", err);
+                    console.error("Fallback: Unable to copy", err);
                 }
 
                 document.body.removeChild(textArea);
@@ -421,14 +424,14 @@
                                 📋 Script Tag #${script.scriptIndex} (${script.variables.length} JSON objects)
                             </div>
                             <div class="variables-list">
-                                ${script.variables.map(variable => `
+                                ${script.variables.map((variable,index) => `
                                     <div class="variable-item">
                                         <div class="variable-header">
                                             <span class="variable-name">${variable.name}</span>
                                             <button 
                                                 class="copy-btn" 
                                                 title="Copy value to clipboard"
-                                                onclick="copyToClipboard(document.getElementById('${script.scriptIndex}-${variable.name}').textContent)"
+                                                onclick="copyToClipboard(document.getElementById('${script.scriptIndex}-${variable.name}-${index}').textContent)"
                                                 type="button"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" style="vertical-align:middle;">
@@ -438,7 +441,7 @@
                                             </button>
                                             <span class="variable-type ${variable.type}">${variable.type}</span>
                                         </div>
-                                        <div class="variable-value" id="${script.scriptIndex}-${variable.name}">${escapeHtml(variable.value)}</div>
+                                        <div class="variable-value" id="${script.scriptIndex}-${variable.name}-${index}">${escapeHtml(variable.value)}</div>
                                     </div>
                                 `).join('')}
                             </div>
