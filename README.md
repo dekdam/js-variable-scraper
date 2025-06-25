@@ -114,6 +114,7 @@ Scrapes a URL and extracts JavaScript variables.
 - **express**: Web framework for Node.js
 - **axios**: HTTP client for making requests
 - **cheerio**: Server-side jQuery implementation for HTML parsing
+- **acorn**: Server-side parses patterns identify JavaScript variables
 - **nodemon**: (dev) Auto-restart server during development
 
 ## Error Handling
