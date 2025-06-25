@@ -46,7 +46,7 @@ A Node.js web application that scrapes webpages and extracts JavaScript variable
 
 3. **Scrape a webpage**
    - Enter a URL in the input field (e.g., `https://example.com`)
-   - Click "Scrape Variables"
+   - Click "Extract JSON"
    - View the extracted JavaScript variables with beautiful formatting
 
 ## Project Structure
