@@ -452,46 +452,58 @@ app.post('/api/scrape', async (req, res) => {
         const $ = cheerio.load(response.data);
         const scriptTags = $('script');
         const results = [];
-        
-        scriptTags.each((index, element) => {
+        const totalScripts = scriptTags.length;
+        let scriptsWithVariables = 0;
+
+        for (let i = 0; i < totalScripts; i++) {
+            const element = scriptTags[i];
             const scriptContent = $(element).html();
-            if (scriptContent && scriptContent.trim()) {
-                const variables = extractJSVariables(scriptContent);
-                if (variables.length > 0) {
-                    results.push({
-                        scriptIndex: index + 1,
-                        variables: variables
-                    });
-                } else {
+            if (!scriptContent || !scriptContent.trim()) continue;
+
+            // Extract variables
+            const variables = extractJSVariables(scriptContent);
+            if (variables.length > 0) {
+                results.push({
+                    scriptIndex: i + 1,
+                    variables
+                });
+                scriptsWithVariables++;
+            } else {
+                // Try to parse as JSON only if it looks like JSON (quick check)
+                const trimmed = scriptContent.trim();
+                if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+                    (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
                     try {
-                        // If no variables found, try to parse the script content as JSON
-                        const parsed = JSON.parse(scriptContent);
+                        const parsed = JSON.parse(trimmed);
                         results.push({
-                            scriptIndex: index + 1,
+                            scriptIndex: i + 1,
                             variables: [{
                                 name: $(element).attr('id') ?? '[::Unknown::]',
-                                value: JSON.stringify(parsed, null, 2),
+                                value: trimmed, // Already a string
                                 type: Array.isArray(parsed) ? 'array' : 'object',
-                                original: scriptContent,
+                                original: trimmed,
                                 parsedData: parsed
                             }]
                         });
-                    } catch (error) {}
+                        scriptsWithVariables++;
+                    } catch (error) {
+                        // Ignore parse errors
+                    }
                 }
             }
-        });
-        
+        }
+
         res.json({
             success: true,
-            url: url,
-            totalScripts: scriptTags.length,
-            scriptsWithVariables: results.length,
-            results: results
+            url,
+            totalScripts,
+            scriptsWithVariables,
+            results
         });
-        
+
     } catch (error) {
         console.error('Scraping error:', error.message);
-        
+
         if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
             res.status(400).json({ error: 'Unable to reach the URL. Please check if the URL is correct and accessible.' });
         } else if (error.name === 'TypeError' && error.message.includes('Invalid URL')) {
